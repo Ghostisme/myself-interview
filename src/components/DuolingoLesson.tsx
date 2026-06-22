@@ -8,6 +8,15 @@ export default function DuolingoLesson({ level, onComplete }: { level: Level, on
   
   const challenge = level.challenges[currentIndex];
 
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }, []);
+
   const handleNext = () => {
     setFeedback(null);
     if (currentIndex < level.challenges.length - 1) {
@@ -17,25 +26,14 @@ export default function DuolingoLesson({ level, onComplete }: { level: Level, on
     }
   };
 
-  useEffect(() => {
-    // 提前触发语音加载
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.getVoices();
-      };
-    }
-  }, []);
-
   const playAudio = (text: string) => {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel(); // 打断上一个发音
+      window.speechSynthesis.cancel(); 
       const msg = new SpeechSynthesisUtterance(text);
       msg.lang = 'en-US';
-      msg.rate = 0.9; // 稍微放慢一点点语速，听得更清楚
+      msg.rate = 0.9; 
 
       const voices = window.speechSynthesis.getVoices();
-      // 优先选择谷歌女声 (Google Translate的声音)，如果没有则选择 Windows 的 Zira 或 Mac 的 Samantha
       const preferredVoices = [
         "Google US English",
         "Microsoft Zira",
@@ -72,19 +70,19 @@ export default function DuolingoLesson({ level, onComplete }: { level: Level, on
   const progress = ((currentIndex) / level.challenges.length) * 100;
 
   return (
-    <div className="flex flex-col items-center p-8 bg-slate-900 min-h-screen text-slate-100">
-      <div className="w-full max-w-2xl mb-8 flex items-center gap-4">
-        <button onClick={onComplete} className="text-slate-400 hover:text-white text-2xl">✕</button>
-        <div className="flex-1 h-4 bg-slate-800 rounded-full overflow-hidden">
+    <div className="flex flex-col items-center p-4 sm:p-8 bg-slate-900 min-h-screen text-slate-100 w-full overflow-x-hidden">
+      <div className="w-full max-w-2xl mb-6 sm:mb-8 flex items-center gap-3 sm:gap-4 px-2">
+        <button onClick={onComplete} className="text-slate-400 hover:text-white text-2xl font-bold p-2 active:scale-90 transition-transform">✕</button>
+        <div className="flex-1 h-3 sm:h-4 bg-slate-800 rounded-full overflow-hidden">
           <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${progress}%` }}></div>
         </div>
       </div>
 
-      <h2 className="text-2xl font-bold mb-8 text-emerald-400 text-center w-full max-w-2xl">
+      <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-emerald-400 text-center w-full max-w-2xl px-2">
         {challenge.prompt}
       </h2>
 
-      <div className="flex-1 w-full max-w-2xl flex flex-col items-center">
+      <div className="flex-1 w-full max-w-2xl flex flex-col items-center px-2">
         {challenge.type === 'multiple_choice' && (
           <MultipleChoiceChallenge challenge={challenge} onCheck={checkAnswer} onPlay={() => playAudio(challenge.audioText || '')} />
         )}
@@ -103,20 +101,20 @@ export default function DuolingoLesson({ level, onComplete }: { level: Level, on
       </div>
 
       {feedback && (
-        <div className={`w-full max-w-2xl mt-8 p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-4 ${feedback === 'success' ? 'bg-emerald-900/50 border-2 border-emerald-500' : 'bg-red-900/50 border-2 border-red-500'}`}>
-          <div className="flex-1">
-            <h3 className={`text-2xl font-bold mb-2 ${feedback === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+        <div className={`w-full max-w-2xl mt-6 sm:mt-8 p-4 sm:p-6 rounded-2xl flex flex-col sm:flex-row items-center gap-4 ${feedback === 'success' ? 'bg-emerald-900/50 border-2 border-emerald-500' : 'bg-red-900/50 border-2 border-red-500'}`}>
+          <div className="flex-1 text-center sm:text-left">
+            <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${feedback === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
               {feedback === 'success' ? '🎉 太棒了！' : '❌ 还需要再练习一下'}
             </h3>
             {feedback === 'error' && (
-              <p className="text-slate-300">
+              <p className="text-sm sm:text-base text-slate-300">
                 正确答案是: <span className="font-bold text-white">{challenge.answer}</span>
               </p>
             )}
           </div>
           <button 
             onClick={handleNext}
-            className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-lg text-white shadow-lg ${feedback === 'success' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'}`}
+            className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold text-lg text-white shadow-lg active:scale-95 transition-transform ${feedback === 'success' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'}`}
           >
             继续 ➡️
           </button>
@@ -126,8 +124,6 @@ export default function DuolingoLesson({ level, onComplete }: { level: Level, on
   );
 }
 
-// Sub-components for each challenge type
-
 function MultipleChoiceChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, onCheck: (c: boolean) => void, onPlay: () => void }) {
   useEffect(() => {
     onPlay();
@@ -136,15 +132,15 @@ function MultipleChoiceChallenge({ challenge, onCheck, onPlay }: { challenge: Ch
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <button onClick={onPlay} className="self-center mb-8 w-24 h-24 bg-blue-600 hover:bg-blue-500 rounded-full text-4xl shadow-lg flex items-center justify-center">
+      <button onClick={onPlay} className="self-center mb-6 sm:mb-8 w-20 h-20 sm:w-24 sm:h-24 bg-blue-600 hover:bg-blue-500 active:scale-90 transition-transform rounded-full text-3xl sm:text-4xl shadow-lg flex items-center justify-center">
         🔊
       </button>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {challenge.options?.map((opt, i) => (
           <button 
             key={i}
             onClick={() => onCheck(opt === challenge.answer)}
-            className="p-6 bg-slate-800 border-2 border-slate-600 hover:border-blue-500 rounded-2xl text-lg font-medium text-slate-200 hover:bg-slate-700 transition-all text-center"
+            className="p-4 sm:p-6 bg-slate-800 border-2 border-slate-600 hover:border-blue-500 active:bg-slate-700 rounded-xl sm:rounded-2xl text-base sm:text-lg font-medium text-slate-200 transition-all text-center"
           >
             {opt}
           </button>
@@ -164,19 +160,19 @@ function ListenTypeChallenge({ challenge, onCheck, onPlay }: { challenge: Challe
   }, [challenge.id]);
 
   return (
-    <div className="w-full flex flex-col items-center gap-6">
-      <button onClick={onPlay} className="w-24 h-24 bg-blue-600 hover:bg-blue-500 rounded-full text-4xl shadow-lg flex items-center justify-center">
+    <div className="w-full flex flex-col items-center gap-4 sm:gap-6">
+      <button onClick={onPlay} className="w-20 h-20 sm:w-24 sm:h-24 bg-blue-600 hover:bg-blue-500 active:scale-90 transition-transform rounded-full text-3xl sm:text-4xl shadow-lg flex items-center justify-center">
         🔊
       </button>
       <textarea 
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        className="w-full bg-slate-800 border-2 border-slate-600 p-4 rounded-xl text-lg text-white focus:outline-none focus:border-blue-500 min-h-[100px]"
-        placeholder="Type what you hear..."
+        className="w-full bg-slate-800 border-2 border-slate-600 p-3 sm:p-4 rounded-xl text-base sm:text-lg text-white focus:outline-none focus:border-blue-500 min-h-[100px]"
+        placeholder="Type what you hear... (请在这里打字)"
       />
       <button 
         onClick={() => onCheck(input.trim().toLowerCase() === challenge.answer.toLowerCase())}
-        className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-lg shadow-lg"
+        className="w-full py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-transform rounded-xl font-bold text-base sm:text-lg shadow-lg"
       >
         检查答案
       </button>
@@ -198,7 +194,7 @@ function TranslateBlocksChallenge({ challenge, onCheck, onPlayWord }: { challeng
   }, [challenge]);
 
   const handleSelect = (b: string) => {
-    onPlayWord(b); // 点击时朗读词块
+    onPlayWord(b); 
     setSelectedBlocks([...selectedBlocks, b]);
     setShuffledBlocks(shuffledBlocks.filter(x => x !== b));
   };
@@ -209,23 +205,23 @@ function TranslateBlocksChallenge({ challenge, onCheck, onPlayWord }: { challeng
 
   return (
     <div className="w-full flex flex-col items-center">
-      <div className="w-full min-h-[100px] border-b-2 border-slate-600 mb-8 flex flex-wrap gap-3 pb-4 items-end">
+      <div className="w-full min-h-[120px] border-b-2 border-slate-600 mb-6 flex flex-wrap gap-2 sm:gap-3 pb-4 items-end">
         {selectedBlocks.map((b, i) => (
-          <button key={i} onClick={() => handleRemove(b)} className="px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-500 hover:bg-slate-600 text-lg">
+          <button key={i} onClick={() => handleRemove(b)} className="px-3 py-2 sm:px-4 sm:py-2 bg-slate-700 text-white rounded-lg border border-slate-500 active:scale-95 text-sm sm:text-base shadow-sm">
             {b}
           </button>
         ))}
       </div>
-      <div className="w-full flex flex-wrap gap-3 mb-8 justify-center">
+      <div className="w-full flex flex-wrap gap-2 sm:gap-3 mb-6 justify-center">
         {shuffledBlocks.map((b, i) => (
-          <button key={i} onClick={() => handleSelect(b)} className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg border border-slate-600 hover:bg-slate-700 hover:text-white text-lg">
+          <button key={i} onClick={() => handleSelect(b)} className="px-3 py-2 sm:px-4 sm:py-2 bg-slate-800 text-slate-300 rounded-lg border border-slate-600 active:scale-95 text-sm sm:text-base shadow-sm">
             {b}
           </button>
         ))}
       </div>
       <button 
         onClick={() => onCheck(selectedBlocks.join(" ") === (challenge.blocks || []).join(" "))}
-        className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-lg shadow-lg"
+        className="w-full py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-transform rounded-xl font-bold text-base sm:text-lg shadow-lg"
       >
         检查连招
       </button>
@@ -236,6 +232,7 @@ function TranslateBlocksChallenge({ challenge, onCheck, onPlayWord }: { challeng
 function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, onCheck: (c: boolean) => void, onPlay: () => void }) {
   const [transcript, setTranscript] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [hasSupport, setHasSupport] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
 
@@ -254,17 +251,20 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
         for (let i = e.resultIndex; i < e.results.length; ++i) {
           if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
         }
-        if (finalTranscript) setTranscript(prev => prev + " " + finalTranscript);
+        if (finalTranscript) setTranscript(prev => (prev + " " + finalTranscript).trim());
       };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       r.onerror = () => setIsRecording(false);
       r.onend = () => setIsRecording(false);
       recognitionRef.current = r;
+      setHasSupport(true);
+    } else {
+      setHasSupport(false);
     }
     setTranscript("");
   }, [challenge.id]);
 
   const toggle = () => {
+    if (!hasSupport) return;
     if (isRecording) {
       recognitionRef.current?.stop();
       setIsRecording(false);
@@ -276,34 +276,40 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-6">
-      <div className="text-3xl font-bold text-white mb-4 text-center">&quot;{challenge.answer}&quot;</div>
-      <button onClick={onPlay} className="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg">🔊 听示范</button>
+    <div className="w-full flex flex-col items-center gap-4 sm:gap-6">
+      <div className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4 text-center">&quot;{challenge.answer}&quot;</div>
+      <button onClick={onPlay} className="px-4 py-2 sm:px-6 sm:py-2 bg-slate-700 hover:bg-slate-600 active:scale-95 transition-transform rounded-lg text-sm sm:text-base">🔊 听示范</button>
       
       <textarea 
         value={transcript}
         onChange={(e) => setTranscript(e.target.value)}
-        className="w-full bg-slate-800 border border-slate-600 p-4 rounded-xl text-lg text-white focus:outline-none focus:border-blue-500 min-h-[100px]"
-        placeholder="点击下方麦克风开始朗读... (⚠️ 提示：浏览器对LangGraph、Zustand等技术词汇识别很差，如果识别错了，你可以直接点这里手动打字修改！)"
+        className="w-full bg-slate-800 border border-slate-600 p-3 sm:p-4 rounded-xl text-base text-white focus:outline-none focus:border-blue-500 min-h-[100px] mt-2"
+        placeholder="点击下方麦克风开始朗读... (⚠️提示：如果识别错了，你可以直接点这里手动打字修改！)"
       />
 
       <button 
         onClick={toggle}
-        className={`w-24 h-24 rounded-full text-4xl shadow-lg flex items-center justify-center transition-all ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500'}`}
+        disabled={!hasSupport}
+        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full text-3xl sm:text-4xl shadow-lg flex items-center justify-center transition-all ${!hasSupport ? 'bg-slate-700 opacity-50 cursor-not-allowed' : isRecording ? 'bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500 active:scale-90'}`}
       >
         🎤
       </button>
 
+      {!hasSupport && (
+        <p className="text-yellow-500 text-xs sm:text-sm text-center px-4 mt-2">
+          ⚠️ 当前浏览器(如微信/部分手机)不支持语音识别。<br/>请直接在上方输入框打字，或使用 Chrome/Safari 浏览器。
+        </p>
+      )}
+
       {!isRecording && transcript && (
         <button 
           onClick={() => {
-            // simple check: if 50% of words match
             const targetWords = challenge.answer.toLowerCase().replace(/[^a-z0-9 ]/g,'').split(' ').filter(Boolean);
             const transcriptWords = transcript.toLowerCase().replace(/[^a-z0-9 ]/g,'').split(' ').filter(Boolean);
             const matches = targetWords.filter(w => transcriptWords.includes(w));
             onCheck(matches.length >= targetWords.length * 0.5);
           }}
-          className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-lg shadow-lg mt-4"
+          className="w-full py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-transform rounded-xl font-bold text-base sm:text-lg shadow-lg mt-2"
         >
           提交语音
         </button>
@@ -315,6 +321,7 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
 function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, onCheck: (c: boolean) => void, onPlay: () => void }) {
   const [transcript, setTranscript] = useState("");
   const [isRecording, setIsRecording] = useState(false);
+  const [hasSupport, setHasSupport] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
 
@@ -333,17 +340,20 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
         for (let i = e.resultIndex; i < e.results.length; ++i) {
           if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
         }
-        if (finalTranscript) setTranscript(prev => prev + " " + finalTranscript);
+        if (finalTranscript) setTranscript(prev => (prev + " " + finalTranscript).trim());
       };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       r.onerror = () => setIsRecording(false);
       r.onend = () => setIsRecording(false);
       recognitionRef.current = r;
+      setHasSupport(true);
+    } else {
+      setHasSupport(false);
     }
     setTranscript("");
   }, [challenge.id]);
 
   const toggle = () => {
+    if (!hasSupport) return;
     if (isRecording) {
       recognitionRef.current?.stop();
       setIsRecording(false);
@@ -355,12 +365,12 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-6">
-      <div className="w-full bg-slate-800 p-6 rounded-2xl flex gap-4 items-start border border-slate-700">
-        <div className="text-4xl">🧑‍💼</div>
+    <div className="w-full flex flex-col items-center gap-4 sm:gap-6">
+      <div className="w-full bg-slate-800 p-4 sm:p-6 rounded-2xl flex gap-3 sm:gap-4 items-start border border-slate-700">
+        <div className="text-3xl sm:text-4xl">🧑‍💼</div>
         <div className="flex-1">
-          <p className="text-xl font-medium mb-4 text-slate-200">&quot;{challenge.prompt}&quot;</p>
-          <button onClick={onPlay} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-bold flex items-center gap-2">
+          <p className="text-base sm:text-lg font-medium mb-3 sm:mb-4 text-slate-200">&quot;{challenge.prompt}&quot;</p>
+          <button onClick={onPlay} className="px-3 py-2 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-transform rounded-lg text-xs sm:text-sm font-bold flex items-center gap-2">
             🔊 听问题
           </button>
         </div>
@@ -369,30 +379,37 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
       <textarea 
         value={transcript}
         onChange={(e) => setTranscript(e.target.value)}
-        className="w-full bg-slate-800 border border-slate-600 p-4 rounded-xl text-lg text-white focus:outline-none focus:border-blue-500 min-h-[150px]"
-        placeholder="点击麦克风，录入你的回答... (⚠️ 提示：语音对专业技术词汇经常听错，如果录音有误，请直接在此处手动打字修改！)"
+        className="w-full bg-slate-800 border border-slate-600 p-3 sm:p-4 rounded-xl text-base text-white focus:outline-none focus:border-blue-500 min-h-[120px]"
+        placeholder="点击麦克风录音... (⚠️提示：如果麦克风不可用或识别有误，请直接在此处手动打字！)"
       />
 
       <button 
         onClick={toggle}
-        className={`w-24 h-24 rounded-full text-4xl shadow-lg flex items-center justify-center transition-all ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500'}`}
+        disabled={!hasSupport}
+        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full text-3xl sm:text-4xl shadow-lg flex items-center justify-center transition-all ${!hasSupport ? 'bg-slate-700 opacity-50 cursor-not-allowed' : isRecording ? 'bg-red-500 animate-pulse' : 'bg-blue-600 hover:bg-blue-500 active:scale-90'}`}
       >
         🎤
       </button>
 
-      {!isRecording && transcript && (
+      {!hasSupport && (
+        <p className="text-yellow-500 text-xs sm:text-sm text-center px-4 mt-2">
+          ⚠️ 当前浏览器/环境不支持语音识别，请直接在上方打字。
+        </p>
+      )}
+
+      {(!isRecording && transcript) || !hasSupport ? (
         <button 
           onClick={() => {
             const keywords = challenge.answer.split(' ');
             const t = transcript.toLowerCase();
             const hits = keywords.filter(kw => t.includes(kw));
-            onCheck(hits.length >= keywords.length - 1); // allow 1 miss
+            onCheck(hits.length >= Math.max(1, keywords.length - 1)); 
           }}
-          className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-lg shadow-lg mt-4"
+          className="w-full py-3 sm:py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-transform rounded-xl font-bold text-base sm:text-lg shadow-lg mt-2"
         >
           提交反击
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
