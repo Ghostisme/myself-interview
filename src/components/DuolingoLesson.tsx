@@ -276,24 +276,57 @@ function TranslateBlocksChallenge({ challenge, onCheck, onPlayWord }: { challeng
   );
 }
 
+// 添加这些类型定义在文件开头，解决 ts-eslint 报错
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: {
+    length: number;
+    [key: number]: {
+      isFinal: boolean;
+      [key: number]: { transcript: string };
+    };
+  };
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onend: () => void;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognition;
+    webkitSpeechRecognition?: new () => SpeechRecognition;
+  }
+}
+
 function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, onCheck: (c: boolean) => void, onPlay: () => void }) {
   const [transcript, setTranscript] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [hasSupport, setHasSupport] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const r = new SpeechRecognition();
+    const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognitionConstructor) {
+      const r = new SpeechRecognitionConstructor();
       r.continuous = true;
       r.interimResults = true;
       r.lang = 'en-US';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      r.onresult = (e: any) => {
+      
+      r.onresult = (e: SpeechRecognitionEvent) => {
         let finalTranscript = '';
         for (let i = e.resultIndex; i < e.results.length; ++i) {
           if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
@@ -301,10 +334,9 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
         if (finalTranscript) setTranscript(prev => (prev + " " + finalTranscript).trim());
       };
       
-      r.onerror = (event: any) => {
+      r.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error("Speech recognition error:", event.error);
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed' || event.error === 'network') {
-          // If permission is denied or network fails (common on mobile browsers), we mark it as unsupported
           setHasSupport(false);
         }
         setIsRecording(false);
@@ -393,20 +425,19 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
   const [transcript, setTranscript] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [hasSupport, setHasSupport] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
-    const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const r = new SpeechRecognition();
+    const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognitionConstructor) {
+      const r = new SpeechRecognitionConstructor();
       r.continuous = true;
       r.interimResults = true;
       r.lang = 'en-US';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      r.onresult = (e: any) => {
+      
+      r.onresult = (e: SpeechRecognitionEvent) => {
         let finalTranscript = '';
         for (let i = e.resultIndex; i < e.results.length; ++i) {
           if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
@@ -414,10 +445,9 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
         if (finalTranscript) setTranscript(prev => (prev + " " + finalTranscript).trim());
       };
       
-      r.onerror = (event: any) => {
+      r.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error("Speech recognition error:", event.error);
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed' || event.error === 'network') {
-          // If permission is denied or network fails (common on mobile browsers), we mark it as unsupported
           setHasSupport(false);
         }
         setIsRecording(false);
