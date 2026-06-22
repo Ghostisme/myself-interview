@@ -44,26 +44,41 @@ export default function MapUI({ onSelectLevel }: { onSelectLevel: (level: Level)
           </div>
         </div>
 
-        {/* Quest Board */}
-        <div className="bg-black border-4 border-yellow-600 p-4 sm:p-6 shadow-[8px_8px_0_0_rgba(180,83,9,1)]">
-          <h2 className="text-xl sm:text-2xl text-center text-yellow-500 mb-6 font-bold tracking-widest">- SELECT DUNGEON -</h2>
-          <div className="flex flex-col gap-4">
-            {gameData.levels.map((level, index) => (
-              <button 
-                key={level.id}
-                onClick={() => onSelectLevel(level)}
-                className="group bg-slate-900 border-2 border-white p-3 sm:p-4 text-left hover:bg-white hover:text-black transition-colors active:translate-y-1 active:shadow-none shadow-[4px_4px_0_0_rgba(255,255,255,1)] flex items-center gap-4"
-              >
-                <div className="text-3xl sm:text-4xl w-12 text-center group-hover:animate-bounce">
-                  {index === 0 ? '🗡️' : index === gameData.levels.length - 1 ? '🐉' : '📜'}
+        {/* Quest Board Grouped by Chapter */}
+        <div className="flex flex-col gap-8">
+          {[1, 2].map(chapterNum => {
+            const chapterLevels = gameData.levels.filter(l => l.chapter === chapterNum);
+            if (chapterLevels.length === 0) return null;
+            return (
+              <div key={chapterNum} className={`bg-black border-4 p-4 sm:p-6 shadow-[8px_8px_0_0_rgba(0,0,0,1)] ${chapterNum === 1 ? 'border-yellow-600 shadow-[8px_8px_0_0_rgba(180,83,9,1)]' : 'border-purple-600 shadow-[8px_8px_0_0_rgba(126,34,206,1)]'}`}>
+                <h2 className={`text-xl sm:text-2xl text-center mb-6 font-bold tracking-widest ${chapterNum === 1 ? 'text-yellow-500' : 'text-purple-400'}`}>
+                  - {chapterLevels[0].chapterTitle} -
+                </h2>
+                <div className="flex flex-col gap-4">
+                  {chapterLevels.map((level, index) => {
+                    const isBoss = index === chapterLevels.length - 1;
+                    return (
+                      <button 
+                        key={level.id}
+                        onClick={() => onSelectLevel(level)}
+                        className={`group bg-slate-900 border-2 p-3 sm:p-4 text-left hover:bg-white hover:text-black transition-colors active:translate-y-1 active:shadow-none shadow-[4px_4px_0_0_rgba(255,255,255,1)] flex items-center gap-4 ${isBoss ? 'border-red-500 shadow-[4px_4px_0_0_rgba(239,68,68,1)]' : 'border-white'}`}
+                      >
+                        <div className="text-3xl sm:text-4xl w-12 text-center group-hover:animate-bounce">
+                          {isBoss ? '🐉' : index === 0 ? '🗡️' : '📜'}
+                        </div>
+                        <div className="flex-1 border-l-2 border-dashed border-slate-500 pl-4 group-hover:border-slate-300">
+                          <h3 className={`font-bold text-base sm:text-lg group-hover:text-black uppercase ${isBoss ? 'text-red-400' : chapterNum === 1 ? 'text-yellow-400' : 'text-purple-300'}`}>
+                            {level.title}
+                          </h3>
+                          <p className="text-xs sm:text-sm group-hover:text-slate-800 text-slate-400 mt-1">{level.description}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
-                <div className="flex-1 border-l-2 border-dashed border-slate-500 pl-4 group-hover:border-slate-300">
-                  <h3 className="font-bold text-base sm:text-lg group-hover:text-black text-yellow-400 uppercase">{level.title}</h3>
-                  <p className="text-xs sm:text-sm group-hover:text-slate-800 text-slate-400 mt-1">{level.description}</p>
-                </div>
-              </button>
-            ))}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
