@@ -300,7 +300,16 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
         }
         if (finalTranscript) setTranscript(prev => (prev + " " + finalTranscript).trim());
       };
-      r.onerror = () => setIsRecording(false);
+      
+      r.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed' || event.error === 'network') {
+          // If permission is denied or network fails (common on mobile browsers), we mark it as unsupported
+          setHasSupport(false);
+        }
+        setIsRecording(false);
+      };
+      
       r.onend = () => setIsRecording(false);
       recognitionRef.current = r;
       setHasSupport(true);
@@ -313,12 +322,17 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
   const toggle = () => {
     if (!hasSupport) return;
     if (isRecording) {
-      recognitionRef.current?.stop();
+      try { recognitionRef.current?.stop(); } catch(e) { console.error(e); }
       setIsRecording(false);
     } else {
       setTranscript("");
-      recognitionRef.current?.start();
-      setIsRecording(true);
+      try {
+        recognitionRef.current?.start();
+        setIsRecording(true);
+      } catch (err) {
+        console.error("Failed to start speech recognition:", err);
+        setHasSupport(false);
+      }
     }
   };
 
@@ -395,7 +409,16 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
         }
         if (finalTranscript) setTranscript(prev => (prev + " " + finalTranscript).trim());
       };
-      r.onerror = () => setIsRecording(false);
+      
+      r.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error);
+        if (event.error === 'not-allowed' || event.error === 'service-not-allowed' || event.error === 'network') {
+          // If permission is denied or network fails (common on mobile browsers), we mark it as unsupported
+          setHasSupport(false);
+        }
+        setIsRecording(false);
+      };
+      
       r.onend = () => setIsRecording(false);
       recognitionRef.current = r;
       setHasSupport(true);
@@ -408,12 +431,17 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
   const toggle = () => {
     if (!hasSupport) return;
     if (isRecording) {
-      recognitionRef.current?.stop();
+      try { recognitionRef.current?.stop(); } catch(e) { console.error(e); }
       setIsRecording(false);
     } else {
       setTranscript("");
-      recognitionRef.current?.start();
-      setIsRecording(true);
+      try {
+        recognitionRef.current?.start();
+        setIsRecording(true);
+      } catch (err) {
+        console.error("Failed to start speech recognition:", err);
+        setHasSupport(false);
+      }
     }
   };
 
