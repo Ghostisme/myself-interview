@@ -320,7 +320,10 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
   }, [challenge.id]);
 
   const toggle = () => {
-    if (!hasSupport) return;
+    if (!hasSupport) {
+      alert("⚠️ 抱歉，您的浏览器（如微信/部分手机内置浏览器）不支持网页原生语音识别！\n\n💡 完美解决方案：\n请直接点击下方的黑色文本输入框，然后使用【您手机键盘自带的麦克风按钮】进行语音打字！不仅准确率极高，还会自动加标点！\n\n(或者您可以复制网址到 Safari / Chrome 浏览器打开)");
+      return;
+    }
     if (isRecording) {
       try { recognitionRef.current?.stop(); } catch(e) { console.error(e); }
       setIsRecording(false);
@@ -332,6 +335,7 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
       } catch (err) {
         console.error("Failed to start speech recognition:", err);
         setHasSupport(false);
+        alert("⚠️ 无法启动麦克风。请确保您已授予网页麦克风权限！\n建议直接点击文本框，使用手机输入法自带的麦克风功能。");
       }
     }
   };
@@ -355,9 +359,9 @@ function SpeakChallenge({ challenge, onCheck, onPlay }: { challenge: Challenge, 
       />
 
       <button 
-        onClick={toggle}
-        disabled={!hasSupport}
-        className={`w-20 h-20 sm:w-24 sm:h-24 border-4 border-white shadow-[4px_4px_0_0_rgba(255,255,255,1)] flex items-center justify-center text-3xl sm:text-4xl transition-all ${!hasSupport ? 'bg-slate-700 opacity-50 cursor-not-allowed' : isRecording ? 'bg-red-600 animate-pulse' : 'bg-green-700 hover:bg-green-600 active:translate-y-1 active:shadow-none'}`}
+        onClick={(e) => { e.preventDefault(); toggle(); }}
+        type="button"
+        className={`w-20 h-20 sm:w-24 sm:h-24 border-4 border-white shadow-[4px_4px_0_0_rgba(255,255,255,1)] flex items-center justify-center text-3xl sm:text-4xl transition-all ${!hasSupport ? 'bg-slate-700 opacity-80' : isRecording ? 'bg-red-600 animate-pulse' : 'bg-green-700 hover:bg-green-600 active:translate-y-1 active:shadow-none'}`}
       >
         🎤
       </button>
@@ -429,7 +433,10 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
   }, [challenge.id]);
 
   const toggle = () => {
-    if (!hasSupport) return;
+    if (!hasSupport) {
+      alert("⚠️ 抱歉，您的浏览器（如微信/部分手机内置浏览器）不支持网页原生语音识别！\n\n💡 完美解决方案：\n请直接点击下方的黑色文本输入框，然后使用【您手机键盘自带的麦克风按钮】进行语音打字！不仅准确率极高，还会自动加标点！\n\n(或者您可以复制网址到 Safari / Chrome 浏览器打开)");
+      return;
+    }
     if (isRecording) {
       try { recognitionRef.current?.stop(); } catch(e) { console.error(e); }
       setIsRecording(false);
@@ -441,6 +448,7 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
       } catch (err) {
         console.error("Failed to start speech recognition:", err);
         setHasSupport(false);
+        alert("⚠️ 无法启动麦克风。请确保您已授予网页麦克风权限！\n建议直接点击文本框，使用手机输入法自带的麦克风功能。");
       }
     }
   };
@@ -459,9 +467,9 @@ function InterviewQaChallenge({ challenge, onCheck, onPlay }: { challenge: Chall
       />
 
       <button 
-        onClick={toggle}
-        disabled={!hasSupport}
-        className={`w-20 h-20 sm:w-24 sm:h-24 border-4 border-white shadow-[4px_4px_0_0_rgba(255,255,255,1)] flex items-center justify-center text-3xl sm:text-4xl transition-all ${!hasSupport ? 'bg-slate-700 opacity-50 cursor-not-allowed' : isRecording ? 'bg-red-600 animate-pulse' : 'bg-green-700 hover:bg-green-600 active:translate-y-1 active:shadow-none'}`}
+        onClick={(e) => { e.preventDefault(); toggle(); }}
+        type="button"
+        className={`w-20 h-20 sm:w-24 sm:h-24 border-4 border-white shadow-[4px_4px_0_0_rgba(255,255,255,1)] flex items-center justify-center text-3xl sm:text-4xl transition-all ${!hasSupport ? 'bg-slate-700 opacity-80' : isRecording ? 'bg-red-600 animate-pulse' : 'bg-green-700 hover:bg-green-600 active:translate-y-1 active:shadow-none'}`}
       >
         🎤
       </button>
